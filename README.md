@@ -1,6 +1,6 @@
-# GitHub Classroom Plagiarism Checker
+# Git Repository Plagiarism Checker
 
-Command-line tool for checking plagiarism in GitHub Classroom assignments using [JPlag](https://github.com/jplag/JPlag).
+Command-line tool for checking plagiarism in Git repositories using [JPlag](https://github.com/jplag/JPlag).
 
 ## Requirements and setup
 
@@ -13,7 +13,20 @@ The setup is done as follows:
 
 ## Usage
 
-Run the `npx zx src/check.mjs --assignment "870565" --language "java"` to check plagiarism in an assignment. The `--assignment` flag determines the assignment id, and the `--language` flag determines the programming language used in the assignment (defaults to "java"). After installing the assignment repositories, a JPlag report should open in the browser.
+Create a `config.json` file to the `data` folder:
+
+```json
+{
+  "template": "https://github.com/hh-programming-2-exercises/warming-up.git",
+  "repositories": ["https://github.com/Kaltsoon/programming-2-warming-up.git"]
+}
+```
+
+The `template` is the repository URL for the template and `repositories` contains an array of repositories to check.
+
+Then, clone the repositories by running the command `npx zx src/clone.mjs --dir "warming-up"`. The `--dir` flag determines the folder where the repositories are cloned in the `data` folder.
+
+Finally, run the `npx zx src/check.mjs --dir "warming-up" --language "java"` to check plagiarism agains the configured repositories. The `--dir` flag determines the folder where the repositories have been cloned using the `npx zx src/clone.mjs` command. The `--language` flag determines the programming language used in the assignment (defaults to "java"). After installing the assignment repositories, a JPlag report should open in the browser.
 
 ## License
 

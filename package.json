@@ -2,9 +2,6 @@
   "name": "github-classroom-plagiarism-checker",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {
-    "check": "npx zx src/check.mjs"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Kaltsoon/github-classroom-plagiarism-checker.git"
@@ -17,9 +14,8 @@
   "homepage": "https://github.com/Kaltsoon/github-classroom-plagiarism-checker#readme",
   "description": "",
   "dependencies": {
-    "lodash.kebabcase": "^4.1.1",
+    "p-map": "^7.0.4",
     "rimraf": "^6.1.0",
-    "strip-color": "^0.1.0",
     "zx": "^8.8.5"
   }
 }
