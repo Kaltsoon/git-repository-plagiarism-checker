@@ -24,7 +24,7 @@ Create a `config.json` file to the `data` folder:
 
 The `template` is the repository URL for the template and `repositories` contains an array of repositories to check.
 
-Then, clone the repositories by running the command `npx zx src/clone.mjs --dir "warming-up"`. The `--dir` flag determines the folder where the repositories are cloned in the `data` folder.
+Then, clone the repositories by running the command `npx zx src/clone.mjs --dir "warming-up"`. The optional `--dir` flag determines the folder where the repositories are cloned in the `data` folder. By default, the name of the template repository will be used.
 
 Finally, run the `npx zx src/check.mjs --dir "warming-up" --language "java"` to check plagiarism agains the configured repositories. The `--dir` flag determines the folder where the repositories have been cloned using the `npx zx src/clone.mjs` command. The `--language` flag determines the programming language used in the assignment (defaults to "java"). After installing the assignment repositories, a JPlag report should open in the browser.
 

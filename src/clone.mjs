@@ -12,11 +12,7 @@ const argv = minimist(process.argv.slice(2), {
   string: ["dir"],
 });
 
-const targetDir = argv.dir;
-
-if (!targetDir) {
-  throw new Error("Missing required --dir argument.");
-}
+const targetDir = argv.dir ?? getTargetDir();
 
 if (!config?.template || !Array.isArray(config?.repositories)) {
   throw new Error(
@@ -69,4 +65,9 @@ function getOwnerRepoFolderName(repositoryUrl) {
   const repo = (segments.at(-1) || "repository").replace(/\.git$/, "");
 
   return `${owner}-${repo}-${getRandomString()}`;
+}
+
+function getTargetDir() {
+  const { template } = config;
+  return template.split("/").at(-1).split(".").at(0);
 }
