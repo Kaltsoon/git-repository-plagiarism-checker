@@ -2,8 +2,8 @@ import { $, minimist, spinner, usePowerShell } from "zx";
 import path from "node:path";
 import fs from "node:fs/promises";
 import { rimraf } from "rimraf";
+import { getConfig, getTargetDir } from "./utils.mjs";
 
-import config from "../data/config.json" with { type: "json" };
 import pMap from "p-map";
 
 usePowerShell();
@@ -12,20 +12,21 @@ const argv = minimist(process.argv.slice(2), {
   string: ["dir"],
 });
 
-const targetDir = argv.dir ?? getTargetDir();
+const plagiarismCheckDir = path.resolve(
+  import.meta.dirname,
+  "..",
+  "plagiarism-check",
+);
+const config = await getConfig();
+const targetDir = await getTargetDir(argv);
 
 if (!config?.template || !Array.isArray(config?.repositories)) {
   throw new Error(
-    "Invalid data/config.json. Expected { template, repositories[] }.",
+    `Invalid ${configPath}. Expected { template, repositories[] }.`,
   );
 }
 
-const assignmentPath = path.resolve(
-  import.meta.dirname,
-  "..",
-  "data",
-  targetDir,
-);
+const assignmentPath = path.resolve(plagiarismCheckDir, targetDir);
 const templatePath = path.join(assignmentPath, "template");
 const repositoriesPath = path.join(assignmentPath, "repositories");
 
@@ -40,8 +41,6 @@ await spinner("Cloning template repository...", async () => {
 });
 
 await spinner("Cloning assignment repositories...", async () => {
-  const nameCounts = new Map();
-
   await pMap(
     config.repositories,
     async (repositoryUrl) => {
@@ -55,7 +54,7 @@ await spinner("Cloning assignment repositories...", async () => {
 });
 
 function getRandomString() {
-    return Math.round(Math.random() * 100000).toString(36)
+  return Math.round(Math.random() * 100000).toString(36);
 }
 
 function getOwnerRepoFolderName(repositoryUrl) {
@@ -65,9 +64,4 @@ function getOwnerRepoFolderName(repositoryUrl) {
   const repo = (segments.at(-1) || "repository").replace(/\.git$/, "");
 
   return `${owner}-${repo}-${getRandomString()}`;
-}
-
-function getTargetDir() {
-  const { template } = config;
-  return template.split("/").at(-1).split(".").at(0);
 }

@@ -13,6 +13,11 @@
   },
   "homepage": "https://github.com/Kaltsoon/github-classroom-plagiarism-checker#readme",
   "description": "",
+  "scripts": {
+    "clone": "bun src/clone.mjs",
+    "check": "bun src/check.mjs",
+    "build:cli": "bun build --compile src/index.mjs --outfile plag"
+  },
   "dependencies": {
     "p-map": "^7.0.4",
     "rimraf": "^6.1.0",

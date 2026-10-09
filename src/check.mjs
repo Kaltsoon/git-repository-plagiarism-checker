@@ -1,11 +1,14 @@
 import { usePowerShell, $, minimist, spinner, glob } from "zx";
-import { rimraf } from "rimraf";
+import path from "node:path";
+import { getPlagiarismCheckDir, getTargetDir } from "./utils.mjs";
 
 usePowerShell();
 
+const plagiarismCheckDir = getPlagiarismCheckDir();
 const argv = minimist(process.argv.slice(2), {});
-const language = argv.language ?? "java";
-const targetDir = argv.dir
+const targetDir = await getTargetDir(argv);
+const templateRepositoryPath = path.join(plagiarismCheckDir, targetDir, "template");
+const language = argv.language ?? (await detectLanguageOrExit());
 
 if (!targetDir) {
   throw new Error("Missing required --dir argument.");
@@ -16,7 +19,8 @@ let jplagPath = await getJPlagPath();
 if (!jplagPath) {
   await spinner(
     "JPlag release not downloaded, downloading...",
-    () => $`gh release download "v6.3.0" -R "jplag/JPlag" --dir data/jplag`
+    () =>
+      $`gh release download "v6.3.0" -R "jplag/JPlag" --dir ${path.join(plagiarismCheckDir, "jplag")}`,
   );
 
   jplagPath = await getJPlagPath();
@@ -25,27 +29,21 @@ if (!jplagPath) {
 await spinner(
   "Generating plagiation report...",
   () =>
-    $`java --enable-native-access=ALL-UNNAMED -jar ${jplagPath} data/${targetDir}/repositories -bc data/${targetDir}/template --language ${language} --overwrite`
+    $`java --enable-native-access=ALL-UNNAMED -jar ${jplagPath} ${path.join(plagiarismCheckDir, targetDir, "repositories")} -bc ${templateRepositoryPath} --language ${language} --overwrite`,
 );
 
 async function getJPlagPath() {
-  const jars = await glob("data/jplag/*.jar");
+  const jars = await glob("*.jar", {
+    cwd: path.join(plagiarismCheckDir, "jplag"),
+    absolute: true,
+  });
 
   return jars[0];
 }
 
-function getAssignmentFieldValue(assignmentString, field) {
-  return assignmentString
-    .split("\n")
-    .map((line) => stripColor(line.trim()))
-    .find((line) => line.toString().startsWith(`${field}:`))
-    .replace(`${field}:`, "")
-    .trim();
-}
-
-async function detectLanguageOrExit(assignmentDescription) {
+async function detectLanguageOrExit() {
   const detectedLanguage = await getRepoPrimaryLanguage(
-    getAssignmentFieldValue(assignmentDescription, "Starter Code Repo URL"),
+    await getTemplateRepositoryUrl(),
   );
 
   if (!detectedLanguage) {
@@ -58,7 +56,7 @@ async function detectLanguageOrExit(assignmentDescription) {
   console.log(
     `Detected language "${detectedLanguage}" from the starter code repo. Use the --language flag to explicitly determine the language`,
   );
-  
+
   return detectedLanguage.toLowerCase();
 }
 
@@ -71,4 +69,10 @@ async function getRepoPrimaryLanguage(repoUrl) {
   } catch (error) {
     return null;
   }
+}
+
+async function getTemplateRepositoryUrl() {
+  const remote = await $`git -C ${templateRepositoryPath} remote get-url origin`;
+
+  return remote.text().trim();
 }
